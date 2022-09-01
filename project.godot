@@ -14,6 +14,11 @@ _global_script_classes=[{
 "language": &"GDScript",
 "path": "res://addons/gdnav/classes/gdastar2d.gd"
 }, {
+"base": "Resource",
+"class": &"GDNavBehavior",
+"language": &"GDScript",
+"path": "res://addons/gdnav/classes/gdnavbehavior.gd"
+}, {
 "base": "RefCounted",
 "class": &"GDNavPoint",
 "language": &"GDScript",
@@ -21,6 +26,7 @@ _global_script_classes=[{
 }]
 _global_script_class_icons={
 "GDAStar2D": "",
+"GDNavBehavior": "",
 "GDNavPoint": ""
 }
 
@@ -28,4 +34,3 @@ _global_script_class_icons={
 
 config/name="GDNav"
 config/features=PackedStringArray("4.0", "Vulkan Clustered")
-config/icon="res://icon.png"

@@ -1,6 +1,9 @@
 extends RefCounted
 class_name GDAStar2D
 
+# GDAstar2D and 3D are the same implementation except 3D uses Vector3s
+# 	while 2D uses Vector2s
+
 var points: Dictionary = {}
 var point_id_to_pos: Dictionary = {}
 var point_pos_to_id: Dictionary = {}
@@ -33,6 +36,7 @@ func astar(from: int, to: int) -> PackedInt64Array:
 			path.reverse()
 			return path
 		
+		# remove current point from the open set so we don't traverse it again immediately
 		open_set.erase(current)
 		var current_point: GDNavPoint = points[current]
 		var connections: PackedInt64Array = current_point.connections
@@ -42,10 +46,12 @@ func astar(from: int, to: int) -> PackedInt64Array:
 		
 		for connected in connections:
 			connected_point = points[connected]
+			# If for whatever reason we don't want the algorithm to consider this point
 			if connected_point.disabled or not _should_traverse(connected):
 				continue
 			tentative_g_score = g_scores[current] + (_compute_cost(current, connected) * connected_point.weight)
 			connected_g_score = g_scores.get(connected, INF)
+			# If we just found the new cheapest path to a point, record it
 			if tentative_g_score < connected_g_score:
 				came_from[connected] = current
 				g_scores[connected] = tentative_g_score
