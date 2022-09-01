@@ -1,8 +1,15 @@
 extends RefCounted
 class_name GDAStar2D
 
-# GDAstar2D and 3D are the same implementation except 3D uses Vector3s
-# 	while 2D uses Vector2s
+# This is an astar implementation meant to be as easy
+# 	to use as Godot's built-in solution while being much more
+# 	customizeable
+# This class matches the built-in AStar API so one should be
+# 	able to simply drop this class into any existing project
+# 	without any problems
+
+# GDAstar2D and GDAStar3D are equivalent except GDAStar3D uses Vector3s
+# 	while GDAStar2D uses Vector2s
 
 var points: Dictionary = {}
 var point_id_to_pos: Dictionary = {}
@@ -10,7 +17,13 @@ var point_pos_to_id: Dictionary = {}
 
 var last_free_id: int = 0
 
-func astar(from: int, to: int) -> PackedInt64Array:
+# Finds the best path using the AStar algorithm
+# The behavior input is completely optional and is used when
+# 	you don't want to create multiple AStar objects to get
+# 	unique pathfinding behavior
+# Ignoring the behavior input will make this implementation
+# 	behave just like the built-in AStar classes
+func astar(from: int, to: int, behavior: GDNavBehavior = null) -> PackedInt64Array:
 	# Using a dictionary as a hash set, null is placeholder value
 	var open_set: Dictionary = {from: null}
 	# Stores the preceding node on the cheapest path to each node
@@ -179,8 +192,8 @@ func get_closest_position_in_segment(to_position: Vector2) -> Vector2:
 	return Vector2()
 
 # Returns an array of point IDs that make up the path between two points
-func get_id_path(from_id: int, to_id: int) -> PackedInt64Array:
-	return astar(from_id, to_id)
+func get_id_path(from_id: int, to_id: int, behavior: GDNavBehavior = null) -> PackedInt64Array:
+	return astar(from_id, to_id, behavior)
 
 # Returns a list of the point IDs connected to the given point ID
 func get_point_connections(id: int) -> PackedInt64Array:
@@ -195,8 +208,8 @@ func get_point_ids() -> Array:
 	return points.keys()
 
 # Returns the path between two points in terms of vector coordinates instead of IDs
-func get_point_path(from_id: int, to_id: int) -> PackedVector2Array:
-	var path: PackedInt64Array = astar(from_id, to_id)
+func get_point_path(from_id: int, to_id: int, behavior: GDNavBehavior = null) -> PackedVector2Array:
+	var path: PackedInt64Array = astar(from_id, to_id, behavior)
 	var point_path: PackedVector2Array = PackedVector2Array()
 	for id in path:
 		point_path.append(point_id_to_pos[id])
