@@ -1,0 +1,31 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+_global_script_classes=[{
+"base": "RefCounted",
+"class": &"GDAStar2D",
+"language": &"GDScript",
+"path": "res://addons/gdnav/classes/gdastar2d.gd"
+}, {
+"base": "RefCounted",
+"class": &"GDNavPoint",
+"language": &"GDScript",
+"path": "res://addons/gdnav/classes/navpoint.gd"
+}]
+_global_script_class_icons={
+"GDAStar2D": "",
+"GDNavPoint": ""
+}
+
+[application]
+
+config/name="GDNav"
+config/features=PackedStringArray("4.0", "Vulkan Clustered")
+config/icon="res://icon.png"
