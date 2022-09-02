@@ -23,7 +23,7 @@ var last_free_id: int = 0
 # 	unique pathfinding behavior
 # Ignoring the behavior input will make this implementation
 # 	behave just like the built-in AStar classes
-func astar(from: int, to: int, behavior: GDNavBehavior = null) -> PackedInt64Array:
+func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64Array:
 	# Using a dictionary as a hash set, null is placeholder value
 	var open_set: Dictionary = {from: null}
 	# Stores the preceding node on the cheapest path to each node
@@ -34,7 +34,7 @@ func astar(from: int, to: int, behavior: GDNavBehavior = null) -> PackedInt64Arr
 	g_scores[from] = 0
 	# Stores a guess at how expensive the path from a given point to finish will be
 	var f_scores: Dictionary = {}
-	f_scores[from] = _estimate_cost(from, to)
+	f_scores[from] = estimate_cost(from, to, behavior)
 	
 	var current: int = from
 	while not open_set.is_empty():
@@ -60,15 +60,15 @@ func astar(from: int, to: int, behavior: GDNavBehavior = null) -> PackedInt64Arr
 		for connected in connections:
 			connected_point = points[connected]
 			# If for whatever reason we don't want the algorithm to consider this point
-			if connected_point.disabled or not _should_traverse(connected):
+			if connected_point.disabled or not should_traverse(connected, behavior):
 				continue
-			tentative_g_score = g_scores[current] + (_compute_cost(current, connected) * connected_point.weight)
+			tentative_g_score = g_scores[current] + (compute_cost(current, connected, behavior) * connected_point.weight)
 			connected_g_score = g_scores.get(connected, INF)
 			# If we just found the new cheapest path to a point, record it
 			if tentative_g_score < connected_g_score:
 				came_from[connected] = current
 				g_scores[connected] = tentative_g_score
-				f_scores[connected] = tentative_g_score + _estimate_cost(connected, to)
+				f_scores[connected] = tentative_g_score + estimate_cost(connected, to, behavior)
 				
 				if not connected in open_set:
 					open_set[connected] = null
@@ -76,6 +76,27 @@ func astar(from: int, to: int, behavior: GDNavBehavior = null) -> PackedInt64Arr
 	# If this point is reached, the algorithm failed to find a path
 	# Return empty list to signify failure
 	return PackedInt64Array()
+
+# Function to abstract deciding whether or not to use the GDNavBehavior
+# 	instead of the virtual functions in this class
+func compute_cost(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> float:
+	if behavior == null:
+		return behavior.compute_cost(from_id, to_id, self)
+	return _compute_cost(from_id, to_id)
+
+# Function to abstract deciding whether or not to use the GDNavBehavior
+# 	instead of the virtual functions in this class
+func estimate_cost(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> float:
+	if behavior == null:
+		return behavior.estimate_cost(from_id, to_id, self)
+	return _estimate_cost(from_id, to_id)
+
+# Function to abstract deciding whether or not to use the GDNavBehavior
+# 	instead of the virtual functions in this class
+func should_traverse(id: int, behavior: GDNavBehavior2D = null) -> bool:
+	if behavior != null:
+		return behavior.should_traverse(id, self)
+	return _should_traverse(id)
 
 # For the user to override to decide if a point should be traversed or not on the fly/without editing points
 func _should_traverse(id: int) -> bool:
@@ -96,8 +117,8 @@ func get_point_id_with_lowest_f_score(open_set: Dictionary, f_scores: Dictionary
 
 # API functions to match built-in AStar implementation
 # ----------
-# Virtual function to be overridden by user when calculating
-# 	navigation cost to a certain point
+# Virtual function to be overridden by user to change how
+# 	navigation cost is calculated
 func _compute_cost(from_id: int, to_id: int) -> float:
 	if from_id == to_id:
 		return 0.0
@@ -192,7 +213,7 @@ func get_closest_position_in_segment(to_position: Vector2) -> Vector2:
 	return Vector2()
 
 # Returns an array of point IDs that make up the path between two points
-func get_id_path(from_id: int, to_id: int, behavior: GDNavBehavior = null) -> PackedInt64Array:
+func get_id_path(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> PackedInt64Array:
 	return astar(from_id, to_id, behavior)
 
 # Returns a list of the point IDs connected to the given point ID
@@ -208,7 +229,7 @@ func get_point_ids() -> Array:
 	return points.keys()
 
 # Returns the path between two points in terms of vector coordinates instead of IDs
-func get_point_path(from_id: int, to_id: int, behavior: GDNavBehavior = null) -> PackedVector2Array:
+func get_point_path(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> PackedVector2Array:
 	var path: PackedInt64Array = astar(from_id, to_id, behavior)
 	var point_path: PackedVector2Array = PackedVector2Array()
 	for id in path:

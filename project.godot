@@ -15,7 +15,7 @@ _global_script_classes=[{
 "path": "res://addons/gdnav/classes/gdastar2d.gd"
 }, {
 "base": "Resource",
-"class": &"GDNavBehavior",
+"class": &"GDNavBehavior2D",
 "language": &"GDScript",
 "path": "res://addons/gdnav/classes/gdnavbehavior.gd"
 }, {
@@ -26,7 +26,7 @@ _global_script_classes=[{
 }]
 _global_script_class_icons={
 "GDAStar2D": "",
-"GDNavBehavior": "",
+"GDNavBehavior2D": "",
 "GDNavPoint": ""
 }
 
