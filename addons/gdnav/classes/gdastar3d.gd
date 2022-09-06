@@ -291,8 +291,12 @@ func set_point_disabled(id: int, disabled: bool = true) -> void:
 
 # Updates the position of the point with the given point ID
 func set_point_position(id: int, position: Vector3) -> void:
+	var curr_pos: Vector3 = points[id].position
+	point_pos_to_id.erase(curr_pos)
+	
 	points[id].position = position
 	point_id_to_pos[id] = position
+	point_pos_to_id[position] = id
 
 # Updates the weight scale of the point with the given point ID
 func set_point_weight_scale(id: int, weight_scale: float) -> void:
