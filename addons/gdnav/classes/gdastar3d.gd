@@ -1,5 +1,5 @@
 extends RefCounted
-class_name GDAStar2D
+class_name GDAStar3D
 
 # This is an astar implementation meant to be as easy
 # 	to use as Godot's built-in solution while being much more
@@ -23,7 +23,7 @@ var last_free_id: int = 0
 # 	unique pathfinding behavior
 # Ignoring the behavior input will make this implementation
 # 	behave just like the built-in AStar classes
-func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64Array:
+func astar(from: int, to: int, behavior: GDNavBehavior3D = null) -> PackedInt64Array:
 	# Using a dictionary as a hash set, null is placeholder value
 	var open_set: Dictionary = {from: null}
 	# Stores the preceding node on the cheapest path to each node
@@ -56,9 +56,9 @@ func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64A
 		
 		# remove current point from the open set so we don't traverse it again immediately
 		open_set.erase(current)
-		var current_point: GDNavPoint2D = points[current]
+		var current_point: GDNavPoint3D = points[current]
 		var connections: PackedInt64Array = current_point.connections
-		var connected_point: GDNavPoint2D
+		var connected_point: GDNavPoint3D
 		var tentative_g_score: float
 		var connected_g_score: float
 		
@@ -84,21 +84,21 @@ func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64A
 
 # Function to abstract deciding whether or not to use the GDNavBehavior
 # 	instead of the virtual functions in this class
-func compute_cost(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> float:
+func compute_cost(from_id: int, to_id: int, behavior: GDNavBehavior3D = null) -> float:
 	if behavior != null:
 		return behavior.compute_cost(from_id, to_id, self)
 	return _compute_cost(from_id, to_id)
 
 # Function to abstract deciding whether or not to use the GDNavBehavior
 # 	instead of the virtual functions in this class
-func estimate_cost(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> float:
+func estimate_cost(from_id: int, to_id: int, behavior: GDNavBehavior3D = null) -> float:
 	if behavior != null:
 		return behavior.estimate_cost(from_id, to_id, self)
 	return _estimate_cost(from_id, to_id)
 
 # Function to abstract deciding whether or not to use the GDNavBehavior
 # 	instead of the virtual functions in this class
-func should_traverse_point(id: int, behavior: GDNavBehavior2D = null) -> bool:
+func should_traverse_point(id: int, behavior: GDNavBehavior3D = null) -> bool:
 	if is_point_disabled(id):
 		return false
 	if behavior != null:
@@ -109,7 +109,7 @@ func should_traverse_point(id: int, behavior: GDNavBehavior2D = null) -> bool:
 func _should_traverse_point(id: int) -> bool:
 	return true
 
-func should_traverse_point_from(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> bool:
+func should_traverse_point_from(from_id: int, to_id: int, behavior: GDNavBehavior3D = null) -> bool:
 	if is_point_disabled(from_id) or is_point_disabled(to_id):
 		return false
 	if behavior != null:
@@ -122,11 +122,11 @@ func _should_traverse_point_from(from_id: int, to_id: int) -> bool:
 
 # Returns the point id of the point at this position
 # If no point exists at this position, return -1
-func get_point_id(pos: Vector2) -> int:
+func get_point_id(pos: Vector3) -> int:
 	return point_pos_to_id.get(pos, -1)
 
 # Check whether or not a point exists at this coordinate
-func does_point_exist_at(pos: Vector2) -> bool:
+func does_point_exist_at(pos: Vector3) -> bool:
 	return pos in point_pos_to_id
 
 func get_point_id_with_lowest_f_score(open_set: Dictionary, f_scores: Dictionary) -> int:
@@ -149,8 +149,8 @@ func get_point_id_with_lowest_f_score(open_set: Dictionary, f_scores: Dictionary
 func _compute_cost(from_id: int, to_id: int) -> float:
 	if from_id == to_id:
 		return 0.0
-	var from_pos: Vector2 = point_id_to_pos.get(from_id, null)
-	var to_pos: Vector2 = point_id_to_pos.get(to_id, null)
+	var from_pos: Vector3 = point_id_to_pos.get(from_id, null)
+	var to_pos: Vector3 = point_id_to_pos.get(to_id, null)
 	return from_pos.distance_to(to_pos)
 
 # Virtual function to be overridden by user when estimating
@@ -158,12 +158,12 @@ func _compute_cost(from_id: int, to_id: int) -> float:
 func _estimate_cost(from_id: int, to_id: int) -> float:
 	if from_id == to_id:
 		return 0.0
-	var from_pos: Vector2 = point_id_to_pos.get(from_id, null)
-	var to_pos: Vector2 = point_id_to_pos.get(to_id, null)
+	var from_pos: Vector3 = point_id_to_pos.get(from_id, null)
+	var to_pos: Vector3 = point_id_to_pos.get(to_id, null)
 	return from_pos.distance_to(to_pos)
 
-func add_point(id: int, position: Vector2, weight_scale: float = 1.0) -> void:
-	var point: GDNavPoint2D = GDNavPoint2D.new()
+func add_point(id: int, position: Vector3, weight_scale: float = 1.0) -> void:
+	var point: GDNavPoint3D = GDNavPoint3D.new()
 	point.id = id
 	point.position = position
 	point.weight = weight_scale
@@ -188,8 +188,8 @@ func clear() -> void:
 func connect_points(from_id: int, to_id: int, bidirectional: bool = true) -> void:
 	if from_id == to_id:
 		return
-	var from_point: GDNavPoint2D = points[from_id]
-	var to_point: GDNavPoint2D = points[to_id]
+	var from_point: GDNavPoint3D = points[from_id]
+	var to_point: GDNavPoint3D = points[to_id]
 	if not to_id in from_point.connections:
 		from_point.connections.append(to_id)
 	if bidirectional and not from_id in to_point.connections:
@@ -197,8 +197,8 @@ func connect_points(from_id: int, to_id: int, bidirectional: bool = true) -> voi
 
 # Disconnects two points
 func disconnect_points(from_id: int, to_id: int, bidirectional: bool = true) -> void:
-	var from_point: GDNavPoint2D = points[from_id]
-	var to_point: GDNavPoint2D = points[to_id]
+	var from_point: GDNavPoint3D = points[from_id]
+	var to_point: GDNavPoint3D = points[to_id]
 	var index: int = from_point.connections.find(to_id)
 	if index != -1:
 		from_point.connections.remove_at(index)
@@ -214,16 +214,16 @@ func get_available_point_id() -> int:
 	return last_free_id
 
 # Returns the closest point ID to the given position
-func get_closest_point(to_position: Vector2, include_disabled: bool = false, behavior: GDNavBehavior2D = null) -> int:
+func get_closest_point(to_position: Vector3, include_disabled: bool = false, behavior: GDNavBehavior3D = null) -> int:
 	if to_position in point_pos_to_id:
 		var id: int = point_pos_to_id[to_position]
-		var point: GDNavPoint2D = points[id]
+		var point: GDNavPoint3D = points[id]
 		if (not point.disabled or include_disabled) and should_traverse_point(id, behavior):
 			return point_pos_to_id[to_position]
 	
 	var closest_id: int = -1
 	var closest_dist: float = INF
-	var curr_point: GDNavPoint2D
+	var curr_point: GDNavPoint3D
 	var curr_dist: float
 	for id in points:
 		curr_point = points[id]
@@ -236,11 +236,11 @@ func get_closest_point(to_position: Vector2, include_disabled: bool = false, beh
 	return closest_id
 
 # Returns the closest position that is part of a segment in the graph
-func get_closest_position_in_segment(to_position: Vector2) -> Vector2:
-	return Vector2()
+func get_closest_position_in_segment(to_position: Vector3) -> Vector3:
+	return Vector3()
 
 # Returns an array of point IDs that make up the path between two points
-func get_id_path(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> PackedInt64Array:
+func get_id_path(from_id: int, to_id: int, behavior: GDNavBehavior3D = null) -> PackedInt64Array:
 	return astar(from_id, to_id, behavior)
 
 # Returns a list of the point IDs connected to the given point ID
@@ -256,15 +256,15 @@ func get_point_ids() -> Array:
 	return points.keys()
 
 # Returns the path between two points in terms of vector coordinates instead of IDs
-func get_point_path(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> PackedVector2Array:
+func get_point_path(from_id: int, to_id: int, behavior: GDNavBehavior3D = null) -> PackedVector3Array:
 	var path: PackedInt64Array = astar(from_id, to_id, behavior)
-	var point_path: PackedVector2Array = PackedVector2Array()
+	var point_path: PackedVector3Array = PackedVector3Array()
 	for id in path:
 		point_path.append(point_id_to_pos[id])
 	return point_path
 
 # Returns the position of a point with a given point ID
-func get_point_position(id: int) -> Vector2:
+func get_point_position(id: int) -> Vector3:
 	return points[id].position
 
 # Returns the weight scale of the given point
@@ -290,7 +290,7 @@ func set_point_disabled(id: int, disabled: bool = true) -> void:
 	points[id].disabled = disabled
 
 # Updates the position of the point with the given point ID
-func set_point_position(id: int, position: Vector2) -> void:
+func set_point_position(id: int, position: Vector3) -> void:
 	points[id].position = position
 	point_id_to_pos[id] = position
 

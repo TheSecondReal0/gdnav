@@ -14,20 +14,38 @@ _global_script_classes=[{
 "language": &"GDScript",
 "path": "res://addons/gdnav/classes/gdastar2d.gd"
 }, {
+"base": "RefCounted",
+"class": &"GDAStar3D",
+"language": &"GDScript",
+"path": "res://addons/gdnav/classes/gdastar3d.gd"
+}, {
 "base": "Resource",
 "class": &"GDNavBehavior2D",
 "language": &"GDScript",
-"path": "res://addons/gdnav/classes/gdnavbehavior.gd"
+"path": "res://addons/gdnav/classes/gdnavbehavior2d.gd"
+}, {
+"base": "Resource",
+"class": &"GDNavBehavior3D",
+"language": &"GDScript",
+"path": "res://addons/gdnav/classes/gdnavbehavior3d.gd"
 }, {
 "base": "RefCounted",
-"class": &"GDNavPoint",
+"class": &"GDNavPoint2D",
 "language": &"GDScript",
-"path": "res://addons/gdnav/classes/navpoint.gd"
+"path": "res://addons/gdnav/classes/gdnavpoint2d.gd"
+}, {
+"base": "RefCounted",
+"class": &"GDNavPoint3D",
+"language": &"GDScript",
+"path": "res://addons/gdnav/classes/gdnavpoint3d.gd"
 }]
 _global_script_class_icons={
 "GDAStar2D": "",
+"GDAStar3D": "",
 "GDNavBehavior2D": "",
-"GDNavPoint": ""
+"GDNavBehavior3D": "",
+"GDNavPoint2D": "",
+"GDNavPoint3D": ""
 }
 
 [application]
