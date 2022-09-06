@@ -36,8 +36,10 @@ func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64A
 	var f_scores: Dictionary = {}
 	f_scores[from] = estimate_cost(from, to, behavior)
 	
+	var old_current: int = -1
 	var current: int = from
 	while not open_set.is_empty():
+		old_current = current
 		current = get_point_id_with_lowest_f_score(open_set, f_scores)
 		if current == to:
 			# Use current values in came_from to figure out the best path
@@ -48,6 +50,9 @@ func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64A
 			# Reverse path because right now it starts at the target and ends at the starting point
 			path.reverse()
 			return path
+		
+		if current == old_current and old_current != from:
+			assert(false, "We just checked the same point twice in a row, should not happen")
 		
 		# remove current point from the open set so we don't traverse it again immediately
 		open_set.erase(current)
@@ -60,7 +65,7 @@ func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64A
 		for connected in connections:
 			connected_point = points[connected]
 			# If for whatever reason we don't want the algorithm to consider this point
-			if connected_point.disabled or not should_traverse(connected, behavior):
+			if connected_point.disabled or not should_traverse_point(connected, behavior) or not should_traverse_point_from(current, connected, behavior):
 				continue
 			tentative_g_score = g_scores[current] + (compute_cost(current, connected, behavior) * connected_point.weight)
 			connected_g_score = g_scores.get(connected, INF)
@@ -80,27 +85,49 @@ func astar(from: int, to: int, behavior: GDNavBehavior2D = null) -> PackedInt64A
 # Function to abstract deciding whether or not to use the GDNavBehavior
 # 	instead of the virtual functions in this class
 func compute_cost(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> float:
-	if behavior == null:
+	if behavior != null:
 		return behavior.compute_cost(from_id, to_id, self)
 	return _compute_cost(from_id, to_id)
 
 # Function to abstract deciding whether or not to use the GDNavBehavior
 # 	instead of the virtual functions in this class
 func estimate_cost(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> float:
-	if behavior == null:
+	if behavior != null:
 		return behavior.estimate_cost(from_id, to_id, self)
 	return _estimate_cost(from_id, to_id)
 
 # Function to abstract deciding whether or not to use the GDNavBehavior
 # 	instead of the virtual functions in this class
-func should_traverse(id: int, behavior: GDNavBehavior2D = null) -> bool:
+func should_traverse_point(id: int, behavior: GDNavBehavior2D = null) -> bool:
+	if is_point_disabled(id):
+		return false
 	if behavior != null:
-		return behavior.should_traverse(id, self)
-	return _should_traverse(id)
+		return behavior.should_traverse_point(id, self)
+	return _should_traverse_point(id)
 
 # For the user to override to decide if a point should be traversed or not on the fly/without editing points
-func _should_traverse(id: int) -> bool:
+func _should_traverse_point(id: int) -> bool:
 	return true
+
+func should_traverse_point_from(from_id: int, to_id: int, behavior: GDNavBehavior2D = null) -> bool:
+	if is_point_disabled(from_id) or is_point_disabled(to_id):
+		return false
+	if behavior != null:
+		return behavior.should_traverse_point_from(from_id, to_id, self)
+	return _should_traverse_point_from(from_id, to_id)
+
+# For the user to override to decide if a point should be traversed or not on the fly/without editing points
+func _should_traverse_point_from(from_id: int, to_id: int) -> bool:
+	return true
+
+# Returns the point id of the point at this position
+# If no point exists at this position, return -1
+func get_point_id(pos: Vector2) -> int:
+	return point_pos_to_id.get(pos, -1)
+
+# Check whether or not a point exists at this coordinate
+func does_point_exist_at(pos: Vector2) -> bool:
+	return pos in point_pos_to_id
 
 func get_point_id_with_lowest_f_score(open_set: Dictionary, f_scores: Dictionary) -> int:
 	var min_id: int = open_set.keys()[0]
@@ -187,11 +214,11 @@ func get_available_point_id() -> int:
 	return last_free_id
 
 # Returns the closest point ID to the given position
-func get_closest_point(to_position: Vector2, include_disabled: bool = false) -> int:
+func get_closest_point(to_position: Vector2, include_disabled: bool = false, behavior: GDNavBehavior2D = null) -> int:
 	if to_position in point_pos_to_id:
 		var id: int = point_pos_to_id[to_position]
 		var point: GDNavPoint = points[id]
-		if not point.disabled or include_disabled:
+		if (not point.disabled or include_disabled) and should_traverse_point(id, behavior):
 			return point_pos_to_id[to_position]
 	
 	var closest_id: int = -1
@@ -200,7 +227,7 @@ func get_closest_point(to_position: Vector2, include_disabled: bool = false) -> 
 	var curr_dist: float
 	for id in points:
 		curr_point = points[id]
-		if curr_point.disabled and not include_disabled:
+		if not ((not curr_point.disabled or include_disabled) and should_traverse_point(id, behavior)):
 			continue
 		curr_dist = curr_point.position.distance_squared_to(to_position)
 		if curr_dist < closest_dist:

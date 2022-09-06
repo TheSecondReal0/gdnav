@@ -40,8 +40,17 @@ func _estimate_cost(from_id: int, to_id: int, astar: GDAStar2D) -> float:
 
 # Wrapper function to be called by other objects, because
 # 	behavior._some_func() is not pretty
-func should_traverse(id: int, astar: GDAStar2D) -> bool:
-	return _should_traverse(id, astar)
+func should_traverse_point(id: int, astar: GDAStar2D) -> bool:
+	return _should_traverse_point(id, astar)
 # For the user to override to decide if a point should be traversed or not on the fly/without editing points
-func _should_traverse(id: int, astar: GDAStar2D) -> bool:
+func _should_traverse_point(id: int, astar: GDAStar2D) -> bool:
+	return true
+
+# Wrapper function to be called by other objects, because
+# 	behavior._some_func() is not pretty
+func should_traverse_point_from(from_id: int, to_id: int, astar: GDAStar2D) -> bool:
+	return _should_traverse_point_from(from_id, to_id, astar)
+# For the user to override to decide if a point should be traversed or not from a specific point 
+# 	on the fly/without editing points
+func _should_traverse_point_from(from_id: int, to_id: int, astar: GDAStar2D) -> bool:
 	return true
